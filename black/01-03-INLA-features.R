@@ -1,4 +1,8 @@
 ## ----echo = FALSE, results = 'hide', echo = FALSE, warning = FALSE, message = FALSE----
+
+# set working directory ----
+setwd("~/git/INLA_books/black")
+
 source('R/initial_setup.R')
 opts_chunk$set(
   fig.path = 'figs/INLAadvfeat-'
