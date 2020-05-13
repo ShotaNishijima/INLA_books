@@ -1,4 +1,8 @@
 ## ----echo = FALSE, results = 'hide', echo = FALSE, warning = FALSE, message = FALSE----
+
+# set working directory ----
+setwd("~/git/INLA_books/black")
+
 source('R/initial_setup.R')
 opts_chunk$set(
   fig.path = 'figs/INLAmethod-'
@@ -19,7 +23,9 @@ data(SPDEtoy)
 ## ----label = "SPDEtoy", results = 'hide', fig.cap =  '(ref:SPDEtoy)'-----
 
 SPDEtoy.sp <- SPDEtoy
+head(SPDEtoy.sp)
 coordinates(SPDEtoy.sp) <- ~ s1 + s2
+?coordinates
 
 bubble(SPDEtoy.sp, "y", key.entries = c(5, 7.5, 10, 12.5, 15), 
        maxsize = 2, xlab = "s1", ylab = "s2")
@@ -29,6 +35,11 @@ m0 <- inla(y ~ s1 + s2, data = SPDEtoy)
 
 ## ---- R.options=list(digits=2)-------------------------------------------
 summary(m0)
+
+## compare to glm() --------------------------
+m0_glm = glm(y ~ s1 + s2, data = SPDEtoy)
+summary(m0_glm)
+logLik(m0_glm)
 
 ## ----label = "SPDEtoym0",  echo = FALSE, results = 'hide', fig.cap = '(ref:SPDEtoym0)'----
 
@@ -54,6 +65,11 @@ f.rw1 <- y ~ f(s1, model = "rw1", scale.model = TRUE) +
 m1 <- inla(f.rw1, data = SPDEtoy)
 
 summary(m1)
+
+names(inla.models()$latent)
+inla.doc("rw1")
+
+m1$summary.fixed
 
 ## ----label = "SPDEtoym1",  echo = FALSE, results = 'hide', fig.cap =  '(ref:SPDEtoym1)'----
 
@@ -115,7 +131,16 @@ m0.opts <- inla(y ~ s1 + s2, data = SPDEtoy,
 )
 
 ## ---- R.options=list(digits=2)-------------------------------------------
-summary(m0.opts)
+summary(m0.opts)  #WAIC =  809.78
+
+## ----------------------------------------------------------
+m1.opts <- inla(f.rw1, data = SPDEtoy,
+                control.compute = list(dic = TRUE, cpo = TRUE, waic = TRUE)
+)
+
+## ---- R.options=list(digits=2)-------------------------------------------
+summary(m1.opts)  # WAIC = 800.42
+
 
 ## ----eval = FALSE--------------------------------------------------------
 ## m0.opts$cpo$cpo

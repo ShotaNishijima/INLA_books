@@ -22,5 +22,4 @@ knit_hooks$set(par.args = function(before, options, envir) {
   if (before) graphics::par(options$par.args)
 })
 
-options(width = 63, prompt = " ", continue = "   ", digits = 4)
-
+# options(width = 63, prompt = " ", continue = "  ", digits = 4)
