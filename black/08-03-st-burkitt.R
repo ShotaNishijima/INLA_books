@@ -55,6 +55,7 @@ idx <- inla.spde.make.index('s', spde$n.spde, n.group = mesh.t$n)
 
 ## ----dualmesh------------------------------------------------------------
 dmesh <- book.mesh.dual(mesh.s)
+# length(dmesh)
 
 ## ----pols----------------------------------------------------------------
 library(rgeos)
@@ -66,6 +67,7 @@ w <- sapply(1:length(dmesh), function(i) {
 
 ## ----areapl--------------------------------------------------------------
 gArea(domainSP)
+sum(w)
 
 ## ----stvol---------------------------------------------------------------
 st.vol <- rep(w, k) * rep(diag(inla.mesh.fem(mesh.t)$c0), m)

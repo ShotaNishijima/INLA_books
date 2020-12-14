@@ -19,18 +19,79 @@ set.seed(2)
 beta0 <- book.rMatern(k, coo, range = sqrt(8) / kappa[1],
   sigma = sqrt(sigma2[1]))
 
+# dev.off()
+# plot(coo[,1],coo[,2])
+
 set.seed(3)
 beta1 <- book.rMatern(k, coo, range = sqrt(8) / kappa[2],
   sigma = sqrt(sigma2[2]))
+
 beta0[, 1] <- beta0[, 1] / (1 - rho[1]^2)
 beta1[, 1] <- beta1[, 1] / (1 - rho[2]^2)
+
+# beta0[, 1] <- beta0[, 1] / sqrt(1 - rho[1]^2)
+# beta1[, 1] <- beta1[, 1] / sqrt(1 - rho[2]^2)
 
 for (j in 2:k) {
   beta0[, j] <- beta0[, j - 1] * rho[1] + beta0[, j] *
     (1 - rho[1]^2)
   beta1[, j] <- beta1[, j - 1] * rho[2] + beta1[, j] *
     (1 - rho[2]^2)
+  # beta0[, j] <- beta0[, j - 1] * rho[1] + beta0[, j]
+  # beta1[, j] <- beta1[, j - 1] * rho[2] + beta1[, j]
+  # beta0[, j] <- beta0[, j - 1] * rho[1] + beta0[, j] *
+  #   sqrt(1 - rho[1]^2)
+  # beta1[, j] <- beta1[, j - 1] * rho[2] + beta1[, j] *
+  #   sqrt(1 - rho[2]^2)
 }
+
+# rho_est0 <- rho_est1 <- c()
+# for (i in 1:nrow(beta0)) {
+#   res = ar(beta0[i,],aic=FALSE,order.max=1)
+#   rho_est0 = c(rho_est0,res$ar)
+#   res = ar(beta1[i,],aic=FALSE,order.max=1)
+#   rho_est1 = c(rho_est1,res$ar)
+# }
+# hist(rho_est0)
+# summary(rho_est0)
+# summary(rho_est1)
+
+xy = data.frame(coo)
+colnames(xy) = c("X","Y")
+for ( j in 1:k) {
+  beta0_j = data.frame(beta0[,j])
+  colnames(beta0_j) <- "Z"
+  beta1_j = data.frame(beta1[,j])
+  colnames(beta1_j) <- "Z"
+  temp0 = bind_cols(xy,beta0_j %>% mutate(t = j))
+  temp1 = bind_cols(xy,beta1_j %>% mutate(t = j))
+  if (j==1) {
+    beta0_longer <- temp0
+    beta1_longer <- temp1
+  } else {
+    beta0_longer <- bind_rows(beta0_longer,temp0)
+    beta1_longer <- bind_rows(beta1_longer,temp1)
+  }
+}
+
+g0 = ggplot(data=beta0_longer,aes(x=X,y=Y,color=Z))+
+  geom_point(size=1.5)+
+  scale_color_gradient(low="blue", high="red")+
+  facet_wrap(~ t,ncol=5)+
+  ggtitle("beta0")+
+  xlab("Longitude")+ylab("Latitude")
+g0
+ggsave(g0,file="beta0.png",unit="mm",height=100,width=200)
+
+g1 = ggplot(data=beta1_longer,aes(x=X,y=Y,color=Z))+
+  geom_point(size=1.5)+
+  scale_color_gradient(low="blue", high="red")+
+  facet_wrap(~ t,ncol=5)+
+  ggtitle("beta1")+  
+  xlab("Longitude")+ylab("Latitude")
+g1
+ggsave(g1,file="beta1.png",unit="mm",height=100,width=200)
+
 
 ## ----response------------------------------------------------------------
 set.seed(4)
@@ -45,11 +106,34 @@ error <- rnorm(n * k, 0, sqrt(1 / taue))
 # Dynamic regression part
 y <- (mu.beta[1] + beta0) + (mu.beta[2] + beta1) * hh + 
   error 
-  
+
+xy = data.frame(coo)
+colnames(xy) = c("X","Y")
+for ( j in 1:k) {
+  y_j = data.frame(y[,j])
+  colnames(y_j) <- "Z"
+  temp = bind_cols(xy,y_j %>% mutate(t = j))
+  if (j==1) {
+    y_longer <- temp
+  } else {
+    y_longer <- bind_rows(y_longer,temp)
+  }
+}
+
+g2 = ggplot(data=y_longer,aes(x=X,y=Y,color=Z))+
+  geom_point(size=1.5)+
+  scale_color_gradient(low="blue", high="red")+
+  facet_wrap(~ t,ncol=5)+
+  ggtitle("y")+
+  xlab("Longitude")+ylab("Latitude")
+g2
+ggsave(g2,file="y.png",unit="mm",height=100,width=200)
+
 
 ## ----mesh----------------------------------------------------------------
 mesh <- inla.mesh.2d(coo, max.edge = c(0.15, 0.3),
   offset = c(0.05, 0.3), cutoff = 0.07)
+# mesh$n
 
 ## ----spde----------------------------------------------------------------
 spde <- inla.spde2.pcmatern(mesh = mesh,

@@ -1,3 +1,5 @@
+setwd("~/git/INLA_books/black")
+
 ## ----sett, echo = FALSE, results = 'hide', warning=FALSE, message=FALSE----
 source("R/initial_setup.R")
 opts_chunk$set(
