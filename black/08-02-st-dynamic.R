@@ -26,35 +26,35 @@ set.seed(3)
 beta1 <- book.rMatern(k, coo, range = sqrt(8) / kappa[2],
   sigma = sqrt(sigma2[2]))
 
-beta0[, 1] <- beta0[, 1] / (1 - rho[1]^2)
-beta1[, 1] <- beta1[, 1] / (1 - rho[2]^2)
+# beta0[, 1] <- beta0[, 1] / (1 - rho[1]^2)
+# beta1[, 1] <- beta1[, 1] / (1 - rho[2]^2)
 
 # beta0[, 1] <- beta0[, 1] / sqrt(1 - rho[1]^2)
 # beta1[, 1] <- beta1[, 1] / sqrt(1 - rho[2]^2)
 
 for (j in 2:k) {
-  beta0[, j] <- beta0[, j - 1] * rho[1] + beta0[, j] *
-    (1 - rho[1]^2)
-  beta1[, j] <- beta1[, j - 1] * rho[2] + beta1[, j] *
-    (1 - rho[2]^2)
+  # beta0[, j] <- beta0[, j - 1] * rho[1] + beta0[, j] *
+  #   (1 - rho[1]^2)
+  # beta1[, j] <- beta1[, j - 1] * rho[2] + beta1[, j] *
+  #   (1 - rho[2]^2)
   # beta0[, j] <- beta0[, j - 1] * rho[1] + beta0[, j]
   # beta1[, j] <- beta1[, j - 1] * rho[2] + beta1[, j]
-  # beta0[, j] <- beta0[, j - 1] * rho[1] + beta0[, j] *
-  #   sqrt(1 - rho[1]^2)
-  # beta1[, j] <- beta1[, j - 1] * rho[2] + beta1[, j] *
-  #   sqrt(1 - rho[2]^2)
+  beta0[, j] <- beta0[, j - 1] * rho[1] + beta0[, j] *
+    sqrt(1 - rho[1]^2)
+  beta1[, j] <- beta1[, j - 1] * rho[2] + beta1[, j] *
+    sqrt(1 - rho[2]^2)
 }
 
-# rho_est0 <- rho_est1 <- c()
-# for (i in 1:nrow(beta0)) {
-#   res = ar(beta0[i,],aic=FALSE,order.max=1)
-#   rho_est0 = c(rho_est0,res$ar)
-#   res = ar(beta1[i,],aic=FALSE,order.max=1)
-#   rho_est1 = c(rho_est1,res$ar)
-# }
-# hist(rho_est0)
-# summary(rho_est0)
-# summary(rho_est1)
+rho_est0 <- rho_est1 <- c()
+for (i in 1:nrow(beta0)) {
+  res = ar(beta0[i,],aic=FALSE,order.max=1,demean=FALSE)
+  rho_est0 = c(rho_est0,res$ar)
+  res = ar(beta1[i,],aic=FALSE,order.max=1,demean=FALSE)
+  rho_est1 = c(rho_est1,res$ar)
+}
+hist(rho_est0)
+summary(rho_est0)
+summary(rho_est1)
 
 xy = data.frame(coo)
 colnames(xy) = c("X","Y")
